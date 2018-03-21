@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Document</title>
+		<style type="text/css">
+			#root {
+				margin: 0px 0px;
+				width: 800px;
+				border: 1px solid black;
+				padding-left: 50px;
+				padding-top: 10px;
+				padding-bottom: 30px;
+				position: relative;
+			}
+			
+			#commit {
+				color: red;
+			}
+			
+			#showInfo{color: red;}
+			#root2{
+				width: 800px;
+				height: 100px;
+				margin-left:800
+			}
+			#row_1{width:30px;height: 20px;background: #f5f6fa;}	
+			#row_2{width:170px;height: 20px;background: #f5f6fa;}
+			#row_3{width: 150px;height: 20px;background: #f5f6fa;}	
+			#row_4{width: 125px;height: 20px;background: #f5f6fa;}
+			.show_input{width:50px;padding-left:3px;}			
+		</style>
+		<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-cookies.js"></script>
+		<script type="text/javascript">
+
+				
+				
+				//创建水果 拼写字符串
+				function creatFruit(No,name, Id, start,end) {
+					console.log(start,end)
+					var rate = ((end+1 - start) / 10).toFixed(2).toString();
+					var delNum = rate.split('.');
+					var delpreNum = delNum[0];
+					var delAfterNum = delNum[1];
+
+					var appendStr =[];
+					appendStr[0] = '<tr>';
+					appendStr[1] = '<td><h>' + No + '</h></td>';
+					appendStr[2] = '<td><h>' + name+'</h><h hidden>'+Id+'</h></td>';
+					appendStr[3] = '';
+					appendStr[4] = '<td><b>' + rate +  '%</b></td>';
+					appendStr[5] = '<td><input class= "show_gl"type="number" value="'+ delpreNum +'"/><h>.</h><input class= "show_gl" type="number" value="'+ delAfterNum+'"/></td>';
+					appendStr[6] = '';
+					appendStr[7] = "</tr>";
+					
+					return appendStr.join('');
+				};
+				
+				function initData(data) {
+					var fruitInfoString="";
+					for(var i = 0; i <data.length; i++) {
+						
+						var tempStr = creatFruit(i+1, data[i]["Name"],data[i]["Id"],data[i]["Start"], data[i]["End"]);
+						fruitInfoString += tempStr;
+					}
+					
+					$("#root").append('<table id="totalTab" style="width: 700px;">' + fruitInfoString + '</table>');
+					updateAllRate();
+					
+					//限制文本框中的数字的取值范围
+					$(".show_gl").on("click keyup", function() {
+						if($(this).val() > 99) {
+							alert("不能大于100");
+							$(this).val(99);
+
+						}
+						if($(this).val() < 0) {
+							alert("不能为负数");
+							$(this).val(0);
+
+						}
+						//to do 更新右侧显示	
+						updateAllRate();
+					});
+					
+					
+				};
+				
+				
+								
+				function updateAllRate() {
+						sumRate = 0;
+						console.log("updateTotalRate")
+						
+						$('#totalTab tr').each(function(i){        // 遍历 tr      
+								var tempRoot = $(this).children('td').eq(3).children();
+								var gl = parseInt($(tempRoot.eq(0)).val())+parseInt($(tempRoot.eq(2)).val())/100;
+								$(this).children('td').eq(2).children().text(gl+"%")
+								sumRate += gl
+							
+       							//console.log($(tempRoot.eq(0)).val())
+       							//console.log($(tempRoot.eq(2)).val())
+					
+   						});
+					$("#showInfo").html("<strong>当前的概率值的和为； " + sumRate + "%</strong>");
+
+				};
+				
+			function getJson()
+			{
+					$.ajax({
+
+					//URl 改成自己服务器的
+					url: "http://127.0.0.1:8088/admin",
+					type: 'get',
+					dataType: 'json',
+					timeout: 3000, //设定超时  
+					cache: true, //禁用缓存  
+					error: function() {
+								console.log("Failed");
+								alert("密码错误，网络异常~");
+							},
+					success: function(data) {
+						console.log(data)
+						initData(data);
+					}
+					
+
+				 });
+			}
+				
+			
+			$(document).ready(function(){
+				$("#get_fruit").click(function() {
+					getJson();
+						
+				});
+				//发送json
+				$("#commit").click(function() {
+						console.log("commit");
+						var jsondata = '';
+						var  gl = 0;
+						var sumRate =0;
+						$('#totalTab tr').each(function(i){        // 遍历 tr      
+								
+								gl = parseFloat($(this).children('td').eq(2).children().text());
+		    					Name = $(this).children('td').eq(1).children().eq(0).text();
+								Id = parseInt($(this).children('td').eq(1).children().eq(1).text());
+							
+								start = sumRate*10+1;
+								sumRate += gl;
+								end = sumRate*10;
+								jsondata  =jsondata + '{"Id":'+Id+',"Name":"'+Name+'","Start":'+start+',"End":'+end+'},';
+								console.log(Id,Name,start,end,sumRate);
+					
+   						});
+   						
+   						jsondata = '{"fruitGL":['+jsondata.slice(0,jsondata.length-1)+']}';
+   						console.log(jsondata);
+
+						//设置admin密码
+						var psw = $("#cookies_psw").val();
+						$.cookie('uuid', null); 
+						$.cookie('uuid',psw,  { expires: 2 });
+						console.log(psw)
+						$.ajax({
+							xhrFields: {withCredentials: true},
+    						crossDomain: true,
+							type: 'post',
+							url: 'http://127.0.0.1:8088/admin',
+							dataType: "json",
+							data: jsondata,
+							
+							success: function(jsondata) {
+								console.log("SUCCESS");
+								console.log(jsondata);
+
+							},
+							//返回不是json也特么报错
+							error: function(error) {
+								console.log(error+'fail');
+								alert("密码错误，网络异常~");
+							}
+						});
+						
+						
+
+				});
+
+			});
+		</script>
+
+	</head>
+
+	<body>
+			
+			<div id="root2">
+		<span id="showInfo"></span>
+			<h>密码：</h><input id="cookies_psw"/>
+		<button id = "commit">提交</button>
+		<button id = "get_fruit">获取数据</button>
+		</div>
+			
+		<div id="root">
+		</div>
+		
+	</body>
+
+</html>

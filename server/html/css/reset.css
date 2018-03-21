@@ -1,0 +1,17 @@
+@charset"UTF-8";
+
+body{margin:0px;padding:0px;font-family:Verdana, Arial, Helvetica, Meiryo, '微软雅黑', sans-serif;font-size: 12px; background-color:#f1f1f1; color:#333;}
+div,
+form,
+h1,h2,h3,h4,
+ul,li,
+dl,dt,dd,
+p{margin:0px;padding:0px;line-height: 1.5em;}
+p,dt,dd{text-align:justify;text-justify:distribute;}
+a img,img{border:0;}
+li{list-style-type:none;}
+
+*{transition:color 200ms,background 200ms,border 200ms,opacity 300ms;
+-moz-transition:color 200ms,background 200ms,border 200ms,opacity 300ms;
+-webkit-transition:color 200ms,background 200ms,border 200ms,opacity 300ms;
+-o-transition:color 200ms,background 200ms,border 200ms,opacity 300ms}

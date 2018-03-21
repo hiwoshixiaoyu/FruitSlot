@@ -1,0 +1,52 @@
+@charset"UTF-8";
+/* hack css */
+#Header,
+#Navi,
+#TopMain,
+#BtmMain,
+.selectbox,
+.txtbox,
+#Popup #BtmBtn,
+#Header .user div,
+#Header .user .search_box
+{display:inline-block;}
+
+
+#Header:after,
+#Navi:after,
+#TopMain:after,
+#BtmMain:after,
+.selectbox:after,
+.txtbox:after,
+#Popup #BtmBtn:after,
+#Header .user div:after,
+#Header .user .search_box:after
+{content: ".";display: block;height: 0;clear: both;visibility: hidden;overflow: hidden;}
+
+
+
+/* Hide from IE-mac \*/
+*html #Header,
+*html #Navi,
+*html #TopMain,
+*html #BtmMain,
+*html .selectbox,
+*html .txtbox,
+*html #Popup #BtmBtn,
+*html #Header .user div,
+*html #Header .user .search_box
+{height: 1%;}
+
+
+#Header,
+#Navi,
+#TopMain,
+#BtmMain,
+.selectbox,
+.txtbox,
+#Popup #BtmBtn,
+#Header .user div,
+#Header .user .search_box
+{display: block;}
+/* End hide fromIE-mac*/
+

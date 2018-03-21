@@ -1,0 +1,10 @@
+@charset"UTF-8";
+
+#Side,
+#Header ul
+{display: none;}
+
+#Wrap{border:none;}
+#Contents{}
+#Main{padding:10px 54px;float:none;}
+address{}

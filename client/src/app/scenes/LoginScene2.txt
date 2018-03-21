@@ -1,0 +1,81 @@
+loadingImg = require"app.scenes.LoadingLayer"
+GameLogic = require"app.scenes.logic.GameLogic"
+
+local LoginScene = class("LoginScene", function()
+    return display.newScene("LoginScene")
+end)
+
+function LoginScene:ctor()
+	print("LoginScene")
+	self.loading = loadingImg:new()
+	self.loading:addTo(self)
+	self:removeChild(self.loading)
+
+
+	--登录验证 返回金币 钻石 等级
+    --登录成功后获取 公告信息
+	 local function onRequestCallback(event)
+
+        local request = event.request
+       --dump(event)
+        if event.name == "completed" then
+            print(request:getResponseHeadersString())
+            local code = request:getResponseStatusCode()
+            if code ~= 200 then
+                -- 请求结束，但没有返回 200 响应代码
+                print(code)
+                return
+            end
+            print("---------------callback--------")
+            -- 请求成功，显示服务端返回的内容
+            print("response length" .. request:getResponseDataLength())
+            local response = request:getResponseString()
+
+            print("response:--",response)
+            response = "123,456,789"
+            local resultStrList = {}
+            local reps = ","
+           string.gsub(response,'[^'..reps..']+',function (w)
+                            table.insert(resultStrList,w)
+                        end)
+            --response
+            print("key:",resultStrList[1])
+            print("gold:",resultStrList[2])
+            print("zuanshi:",resultStrList[3])
+            GameLogic:Instance():initUserData()
+            GameLogic:Instance():setKey(resultStrList[1])
+            GameLogic:Instance():setGoldAndZuanShi(resultStrList[2],resultStrList[3])
+            GameLogic:Instance():setlevel(response)
+
+            print(response)
+
+        elseif event.name == "progress" then
+            print("progress" .. event.dltotal)
+        else
+            -- 请求失败，显示错误代码和错误消息
+            print(event.name)
+            print(request:getErrorCode(), request:getErrorMessage())
+            return
+        end
+    end
+
+
+
+    print("reuquest")
+	local request = network.createHTTPRequest(onRequestCallback, "127.0.0.1:8000", "POST")
+	--request:addPOSTValue("name", "laoliu")
+	request:setPOSTData("user:123456,password:123456")
+    request:start()
+end
+
+
+
+
+function LoginScene:onEnter()
+end
+
+function LoginScene:onExit()
+        
+end
+
+return LoginScene

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Document</title>
+		<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+		<script>
+			function newFruit(Id, name, rate) {
+					var appendStr = [];
+					appendStr[0] = "<tr>"
+					appendStr[1] = '<td><h>' + Id + '.</h></td>';
+					appendStr[2] = '<td><h>' + name + ' :</h></td>';
+					appendStr[3] = '<td><b>' + rate + '%</b></td>';
+					appendStr[4] = '<td><input type="number"></td>';
+					appendStr[5] = '<td><h>.</h></td>'
+					appendStr[6] = '<td><input type="number"></td>';
+					appendStr[7] = "</tr>"
+
+					return appendStr.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+			}
+			
+			function listenAllInput(){
+			
+}
+			$(document).ready(function() {
+				//异步获取json
+				$.ajax({
+					url: "http://127.0.0.1:8088/admin",
+					type: 'get',
+					dataType: 'json',
+					timeout: 3000, //设定超时  
+					cache: true, //禁用缓存  
+
+					success: function(data) {
+
+						console.log(typeof(data));
+
+						var fruitInfoString = "";
+
+						for(var i = 0; i < data.length; i++) {
+
+							var id = data[i]["Id"];
+							var name = data[i]["Name"];
+							var rate = ((data[i]["End"] - data[i]["Start"]) / 10).toFixed(2);
+
+							fruitInfoString += newFruit(id, name, rate);
+
+						}
+
+						$("#root").html("<table style='width: 700px;'>" + fruitInfoString + "</table>");
+
+						setIdIndexNum = 0
+						for(var i = 0; i < $("input").length; i++) {
+							$("input").eq(i).attr("id", "setidindex" + setIdIndexNum + "");
+							setIdIndexNum++;
+						}
+
+						//console.log($("input").eq(3).attr("id"));
+
+						for(var i = 0; i < data.length; i++) {
+
+							var rate = ((data[i]["End"] - data[i]["Start"]) / 100).toFixed(2).toString();
+							var delNum = rate.split('.');
+							var delpreNum = delNum[0];
+							var delAfterNum = delNum[1];
+
+							$("input").eq(i * 2).val(delpreNum);
+							$("input").eq(i * 2 + 1).val(delAfterNum);
+
+						}
+
+						updateTotalLevel();
+
+						$("input:odd").on("click keyup", function() {
+							if($(this).val() > 99) {
+								alert("不能大于1");
+								$(this).val(99);
+
+							}
+
+							if($(this).val() < 0) {
+								alert("不能为负数");
+								$(this).val(0);
+
+							}
+
+						});
+
+						$("input:even").on("click keyup", function() {
+							if($(this).val() > 99) {
+								alert("不能大于100");
+								$(this).val(99);
+							}
+
+							if($(this).val() < 0) {
+								alert("不能为负数");
+								$(this).val(0);
+
+							}
+
+						});
+
+						$("input").click(function() {
+
+							updateTotalLevel();
+							updatePerInfo();
+
+						});
+
+						$("input").keyup(function() {
+
+							updateTotalLevel();
+							updatePerInfo();
+
+						});
+
+						var sumLevel = 0;
+
+						function updateTotalLevel() {
+
+							sumLevel = 0;
+
+							for(var i = 0; i < data.length; i++) {
+
+								var numPrev = $("input").eq(i * 2).val() / 100;
+								var numAfter = $("input").eq(i * 2 + 1).val() / 10000.0.toFixed(2);
+
+								var sumNum = numPrev + numAfter;
+
+								sumLevel = sumLevel + sumNum;
+
+							}
+
+							$("#showInfo").html("<strong>当前的概率值的和为； " + (sumLevel * 100).toFixed(2) + "%</strong>")
+
+						}
+
+						function updatePerInfo() {
+
+							$("input:odd").on("click keyup", function() {
+
+								var numPrev = $(this).val() / 10000.0.toFixed(2);
+								var numAfter = $(this).parent().prev().prev().children().val() / 100;
+								var sumNum = numPrev + numAfter;
+								$(this).parent().prev().prev().prev().children().text((sumNum * 100).toFixed(2) + "%");
+
+							})
+
+							$("input:even").on("click keyup", function() {
+
+								var numPrev = $(this).val() / 100;
+								var numAfter = $(this).parent().next().next().children().val() / 10000.0.toFixed(2);
+								var sumNum = numPrev + numAfter;
+								$(this).parent().prev().children().text((sumNum * 100).toFixed(2) + "%");
+
+							})
+
+						}
+
+						$("#setnewlevel").click(function() {
+
+							var newdata = data;
+
+							for(var i = 0; i < newdata.length; i++) {
+
+								var numPrev = $("input").eq(i * 2).val() / 100;
+								var numAfter = $("input").eq(i * 2 + 1).val() / 10000.0.toFixed(2);
+
+								var newLevelRatePer = (numPrev + numAfter) * 1000;
+
+								if(i == 0) {
+									newdata[0]["Start"] = "1";
+									newdata[0]["End"] = (Number(newdata[0]["Start"]) + Number(newLevelRatePer)).toString();
+
+								} else {
+									newdata[i]["Start"] = (Number(newdata[i - 1]["End"]) + 1).toString();
+									newdata[i]["End"] = (Number(newdata[i]["Start"]) + +Number(newLevelRatePer)).toString();
+								}
+
+							}
+
+							$.ajax({
+								type: 'post',
+								data: newdata,
+								success: function(data) {
+									console.log("Success");
+								}
+
+							});
+
+						});
+
+					}
+
+				});
+
+			});
+		</script>
+	</head>
+
+	<body style="position: relative;">
+		<div id="root" style="width: 800px;	border-style:solid;
+	border-width:1px; margin: 50px auto; padding-left:50px ; padding-top:30px ;padding-bottom: 30px;position: relative;">
+
+		</div>
+
+		<span id="showInfo" style="position: absolute; left: 900px;bottom: 5px;color: red;">
+			
+		</span>
+
+		<input type="button" name="" id="setnewlevel" value="提交" style="position: absolute; left: 400px;bottom: 5px;color: red;" />
+
+	</body>
+
+</html>

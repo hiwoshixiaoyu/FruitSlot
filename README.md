@@ -36,7 +36,7 @@ https://github.com/hiwoshixiaoyu/FruitSlot/wiki/%E7%8E%AF%E5%A2%83%E5%92%8C%E5%9
 --
  源码仅供技术交流，请勿用于商业及非法用途，如产生法律纠纷与本人无关。
 ##欢迎大家merge代码
- QQ/wechat:1078696762
+ QQ/wechat:1078696762（有偿架设）
 	 
 
 
